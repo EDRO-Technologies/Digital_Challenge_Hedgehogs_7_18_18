@@ -1,145 +1,171 @@
 import uuid
 import sqlite3
-import cowsay
 import telebot
 from yookassa import Configuration, Payment
 from datetime import datetime
-
-# Token for Telegram bot
 from config import token_bot
 
-# Configure Yookassa
 Configuration.account_id = "493373"
 Configuration.secret_key = "test_yYfmHxQmXLFNdozQmMKzAZCaIs8XY1Bj9xC5IaeRAQE"
 
-# Define admin IDs (replace with actual Telegram user IDs of admins)
-ADMIN_IDS = [466348470]  # Replace with real admin IDs
+ADMIN_IDS = [466348470]
+bot = telebot.TeleBot(token_bot)
 
-bot = telebot.TeleBot(token_bot)  # Replace with your bot token
-
-# Start message
-print(cowsay.get_output_string('turtle', "Бот запущен!"))
-print(" " * 10, "##" * 12)
-print("", end='\n')
+print("Бот запущен!")
 
 
 def is_admin(user_id):
-    """Check if a user is an admin."""
     return user_id in ADMIN_IDS
 
 
-@bot.message_handler(commands=['admin_pay'])
-def create_admin_payment(message):
+@bot.message_handler(commands=['start'])
+def register_user(message):
     try:
-        # Check if the user is an admin
+        bot.send_message(message.chat.id, "Введите своё ФИО:")
+        bot.register_next_step_handler(message, get_full_name)
+    except Exception as e:
+        bot.send_message(message.chat.id, "Произошла ошибка при регистрации.")
+        print(f"Error in /start: {e}")
+
+
+def get_full_name(message):
+    full_name = message.text.strip()
+    bot.send_message(message.chat.id, "Введите вашу учебную группу:")
+    bot.register_next_step_handler(message, get_group, full_name)
+
+
+def get_group(message, full_name):
+    group = message.text.strip()
+    try:
+        con = sqlite3.connect("database/chats.db")
+        cur = con.cursor()
+        cur.execute("""
+        INSERT INTO users (id, full_name, group_name) 
+        VALUES (?, ?, ?)
+        """, (message.chat.id, full_name, group))
+        con.commit()
+        con.close()
+        bot.send_message(message.chat.id, "Вы успешно зарегистрированы!")
+    except Exception as e:
+        bot.send_message(message.chat.id, "Произошла ошибка при регистрации.")
+        print(f"Error saving user to database: {e}")
+
+
+@bot.message_handler(commands=['create_payment'])
+def create_payment_for_all(message):
+    try:
         if not is_admin(message.chat.id):
             bot.send_message(message.chat.id, "У вас нет прав для использования этой команды.")
             return
 
-        # Split the command to extract parameters
         args = message.text.split(maxsplit=2)
         if len(args) < 3:
-            bot.send_message(message.chat.id,
-                             "Пожалуйста, укажите сумму и описание.\nПример: /admin_pay 1500.00 Оплата за услугу")
+            bot.send_message(
+                message.chat.id,
+                "Укажите сумму и описание.\nПример: /create_payment 1500.00 Оплата за услугу"
+            )
             return
 
-        try:
-            # Parse amount and description
-            amount = float(args[1])
-            description = args[2]
-        except ValueError:
-            bot.send_message(message.chat.id, "Некорректная сумма. Укажите число в формате: 1500.00")
-            return
+        amount = float(args[1])
+        description = args[2]
 
-        # Create a payment via Yookassa
-        payment = Payment.create({
-            "amount": {
-                "value": f"{amount:.2f}",
-                "currency": "RUB"
-            },
-            "confirmation": {
-                "type": "redirect",
-                "return_url": "https://t.me/profspay_bot"
-            },
-            "capture": True,
-            "description": description
-        }, uuid.uuid4())
+        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        confirmation_url = payment.confirmation.confirmation_url
-        payment_id = payment.id
-
-        # Get current date and time
-        now = datetime.now()
-        date = now.strftime("%Y-%m-%d")
-        time_now = now.strftime("%H:%M:%S")
-
-        # Store payment details in the database
-        con = sqlite3.connect("database/chats.db")
+        con = sqlite3.connect("database/payments.db")
         cur = con.cursor()
         cur.execute("""
-            INSERT INTO payments (user_id, first_name, payment_id, date, time, amount, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (message.chat.id, message.from_user.first_name, payment_id, date, time_now, amount, "pending"))
-        con.commit()
-        con.close()
+            INSERT INTO payments (description, amount, created_at)
+            VALUES (?, ?, ?)
+        """, (description, amount, created_at))
 
-        # Send payment link and payment ID to the admin
-        bot.send_message(
-            message.chat.id,
-            f"Платеж создан.\n"
-            f"Сумма: {amount} RUB\n"
-            f"Описание: {description}\n"
-            f"ID платежа: {payment_id}\n"
-            f"Ссылка для оплаты: {confirmation_url}"
-        )
-    except Exception as e:
-        bot.send_message(message.chat.id, "Произошла ошибка при создании платежа.")
-        print(f"Error creating admin payment: {e}")
+        cur.execute("DELETE FROM payment_users")
 
+        users_con = sqlite3.connect("database/chats.db")
+        users_cur = users_con.cursor()
+        users_cur.execute("SELECT id, full_name FROM users")
+        users = users_cur.fetchall()
+        users_con.close()
 
-@bot.message_handler(commands=['i_payed'])
-def verify_payment(message):
-    try:
-        # Get payment details from the user
-        user_id = message.chat.id
+        for user_id, full_name in users:
+            payment = Payment.create({
+                "amount": {
+                    "value": f"{amount:.2f}",
+                    "currency": "RUB"
+                },
+                "confirmation": {
+                    "type": "redirect",
+                    "return_url": "https://t.me/profspay_bot?i_paid"
+                },
+                "capture": True,
+                "description": description
+            }, uuid.uuid4())
 
-        # Verify payment ID
-        con = sqlite3.connect("payments.db")
-        cur = con.cursor()
-        cur.execute("SELECT payment_id, confirmation_url, description, amount FROM payments WHERE paid_count = 0")
-        payment = cur.fetchone()
-        con.close()
+            confirmation_url = payment.confirmation.confirmation_url
 
-        if not payment:
-            bot.send_message(message.chat.id, "Нет активного платежа для проверки.")
-            return
-
-        payment_id, confirmation_url, description, amount = payment
-
-        # Fetch payment details from Yookassa
-        yk_payment = Payment.find_one(payment_id)
-        if yk_payment.status == "succeeded":
-            # Update the paid_count in the database
-            con = sqlite3.connect("payments.db")
-            cur = con.cursor()
             cur.execute("""
-                UPDATE payments SET paid_count = paid_count + 1 WHERE payment_id = ?
-            """, (payment_id,))
-            con.commit()
-            con.close()
+                INSERT INTO payment_users (user_id, status, payment_id, confirmation_url, amount, created_at, description)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                user_id, "pending", payment.id, confirmation_url, amount, created_at, description))
 
             bot.send_message(
                 user_id,
-                f"Оплата успешно завершена!\n"
-                f"ID платежа: {payment_id}\n"
+                f"Для вас создан новый платёж:\n"
                 f"Сумма: {amount} RUB\n"
-                f"Описание: {description}"
+                f"Описание: {description}\n"
+                f"Ссылка для оплаты: {confirmation_url}"
             )
+
+        con.commit()
+        con.close()
+
+        bot.send_message(message.chat.id, "Платёж успешно создан и отправлен всем пользователям.")
+    except Exception as e:
+        bot.send_message(message.chat.id, "Произошла ошибка при создании платежа.")
+        print(f"Error in /create_payment_for_all: {e}")
+
+
+@bot.message_handler(commands=['i_paid'])
+def verify_payment(message):
+    try:
+        user_id = message.chat.id
+
+        con = sqlite3.connect("database/payments.db")
+        cur = con.cursor()
+        cur.execute("""
+            SELECT status, payment_id FROM payment_users WHERE user_id = ?
+        """, (user_id,))
+        user_payment = cur.fetchone()
+        con.close()
+
+        if not user_payment:
+            bot.send_message(user_id, "Вы не привязаны к текущему платежу.")
+            return
+
+        status, payment_id = user_payment
+
+        if status == "paid":
+            bot.send_message(user_id, "Вы уже оплатили текущий платёж.")
+            return
+
+        payment = Payment.find_one(payment_id)
+        if payment.status == "succeeded":
+            con = sqlite3.connect("database/payments.db")
+            cur = con.cursor()
+            cur.execute("""
+                UPDATE payment_users
+                SET status = 'paid'
+                WHERE user_id = ?
+            """, (user_id,))
+            con.commit()
+            con.close()
+
+            bot.send_message(user_id, "Ваш платёж успешно подтверждён. Спасибо!")
         else:
-            bot.send_message(user_id, f"Оплата еще не завершена. Статус: {yk_payment.status}")
+            bot.send_message(user_id, "Ваш платёж ещё не завершён. Проверьте статус позже.")
     except Exception as e:
         bot.send_message(message.chat.id, "Произошла ошибка при проверке платежа.")
-        print(f"Error verifying payment: {e}")
+        print(f"Error in /i_paid: {e}")
 
 
 @bot.message_handler(commands=['who_paid'])
@@ -149,81 +175,58 @@ def who_paid(message):
             bot.send_message(message.chat.id, "У вас нет прав для использования этой команды.")
             return
 
-        # Query all payments with paid_count > 0
-        con = sqlite3.connect("payments.db")
-        cur = con.cursor()
-        cur.execute("""
-            SELECT payment_id, description, amount, paid_count FROM payments WHERE paid_count > 0
-        """)
-        payments = cur.fetchall()
-        con.close()
+        payments_con = sqlite3.connect("database/payments.db")
+        payments_cur = payments_con.cursor()
 
-        if not payments:
-            bot.send_message(message.chat.id, "Нет данных об оплатах.")
-            return
-
-        # Format and send the list
-        response = "Список оплаченных платежей:\n\n"
-        for payment_id, description, amount, paid_count in payments:
-            response += f"ID: {payment_id}\nОписание: {description}\nСумма: {amount} RUB\nОплатило: {paid_count}\n\n"
-
-        bot.send_message(message.chat.id, response)
-    except Exception as e:
-        bot.send_message(message.chat.id, "Произошла ошибка при получении списка оплативших.")
-        print(f"Error retrieving paid users: {e}")
-
-
-@bot.message_handler(commands=['broadcast_payment'])
-def broadcast_payment(message):
-    try:
-        if not is_admin(message.chat.id):
-            bot.send_message(message.chat.id, "У вас нет прав для использования этой команды.")
-            return
-
-        # Get the payment ID from the command
-        args = message.text.split(maxsplit=1)
-        if len(args) < 2:
-            bot.send_message(message.chat.id, "Укажите ID платежа для рассылки.")
-            return
-
-        payment_id = args[1]
-
-        # Retrieve payment details
-        con = sqlite3.connect("payments.db")
-        cur = con.cursor()
-        cur.execute("""
-            SELECT confirmation_url, description, amount FROM payments WHERE payment_id = ?
-        """, (payment_id,))
-        payment = cur.fetchone()
-        con.close()
+        payments_cur.execute(
+            "SELECT id, description, amount, created_at FROM payments ORDER BY created_at DESC LIMIT 1")
+        payment = payments_cur.fetchone()
 
         if not payment:
-            bot.send_message(message.chat.id, "Платеж с указанным ID не найден.")
+            bot.send_message(message.chat.id, "В базе данных отсутствуют записи о платежах.")
+            payments_con.close()
             return
 
-        confirmation_url, description, amount = payment
+        payment_id, description, amount, created_at = payment
 
-        # Retrieve all users from the user database
-        con = sqlite3.connect("database/chats.db")
-        cur = con.cursor()
-        cur.execute("SELECT id FROM id")
-        users = cur.fetchall()
-        con.close()
+        payments_cur.execute("""
+            SELECT user_id, status FROM payment_users
+        """)
+        payment_users = payments_cur.fetchall()
+        payments_con.close()
 
-        for user in users:
-            try:
-                bot.send_message(
-                    user[0],
-                    f"Новый платеж:\nОписание: {description}\nСумма: {amount} RUB\n"
-                    f"Оплатить можно по ссылке: {confirmation_url}"
-                )
-            except Exception as e:
-                print(f"Error sending message to user {user[0]}: {e}")
+        if not payment_users:
+            bot.send_message(message.chat.id, "Ни один пользователь не привязан к текущему платежу.")
+            return
 
-        bot.send_message(message.chat.id, "Рассылка платежа завершена.")
+        chats_con = sqlite3.connect("database/chats.db")
+        chats_cur = chats_con.cursor()
+
+        user_details = {}
+        chats_cur.execute("SELECT id, full_name FROM users")
+        for user_id, full_name in chats_cur.fetchall():
+            user_details[user_id] = full_name
+        chats_con.close()
+
+        paid_users = []
+        pending_users = []
+        for user_id, status in payment_users:
+            name = user_details.get(user_id, "Неизвестный пользователь")
+            if status == "paid":
+                paid_users.append(f"{name} ({user_id})")
+            else:
+                pending_users.append(f"{name} ({user_id})")
+
+        message_text = f"Платёж:\nОписание: {description}\nСумма: {amount} RUB\nДата: {created_at}\n\n"
+        message_text += f"**Оплатили:** ({len(paid_users)})\n" + (
+            "\n".join(paid_users) if paid_users else "Нет данных") + "\n\n"
+        message_text += f"**Не оплатили:** ({len(pending_users)})\n" + (
+            "\n".join(pending_users) if pending_users else "Нет данных")
+
+        bot.send_message(message.chat.id, message_text)
     except Exception as e:
-        bot.send_message(message.chat.id, "Произошла ошибка при рассылке.")
-        print(f"Error broadcasting payment: {e}")
+        bot.send_message(message.chat.id, "Произошла ошибка при получении списка платежей.")
+        print(f"Error in /who_paid: {e}")
 
 
 if __name__ == '__main__':
