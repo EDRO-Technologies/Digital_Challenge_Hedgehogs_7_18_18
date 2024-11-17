@@ -1,0 +1,153 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section {
+  display: block;
+}
+
+body {
+  line-height: 1;
+}
+
+ol, ul {
+  list-style: none;
+}
+
+blockquote, q {
+  quotes: none;
+}
+
+blockquote::before, blockquote::after, q::before, q::after {
+  content: "";
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+body, p, h1, h2, h3, h4, h5, ul {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+body {
+  font-family: avenirNextCyr, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 36px;
+  line-height: 120%;
+  font-weight: bold;
+}
+
+input {
+  all: unset;
+  box-sizing: border-box;
+}
+
+button {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-block;
+  cursor: pointer;
+}
+
+input[type=text], input[type=submit], textarea {
+  -webkit-appearance: none;
+}
+
+@font-face {
+  font-family: "avenirNextCyr";
+  src: url("../fonts/AvenirNextCyr-Regular.eot");
+  src: url("../fonts/AvenirNextCyr-Regular.eot?#iefix") format("embedded-opentype"), url("../fonts/AvenirNextCyr-Regular.woff2") format("woff2"), url("../fonts/AvenirNextCyr-Regular.woff") format("woff"), url("../fonts/AvenirNextCyr-Regular.ttf") format("truetype"), url("../fonts/AvenirNextCyr-Regular.svg#avenirNextCyr") format("svg");
+  font-weight: 400; /* Regular weight */
+}
+@font-face {
+  font-family: "avenirNextCyr";
+  src: url("../fonts/AvenirNextCyr-Bold.eot");
+  src: url("../fonts/AvenirNextCyr-Bold.eot?#iefix") format("embedded-opentype"), url("../fonts/AvenirNextCyr-Bold.woff2") format("woff2"), url("../fonts/AvenirNextCyr-Bold.woff") format("woff"), url("../fonts/AvenirNextCyr-Bold.ttf") format("truetype"), url("../fonts/AvenirNextCyr-Bold.svg#avenirNextCyr") format("svg");
+  font-weight: 700; /* Bold weight */
+}
+@font-face {
+  font-family: "avenirNextCyr";
+  src: url("../fonts/AvenirNextCyr-Italic.eot");
+  src: url("../fonts/AvenirNextCyr-Italic.eot?#iefix") format("embedded-opentype"), url("../fonts/AvenirNextCyr-Italic.woff2") format("woff2"), url("../fonts/AvenirNextCyr-Italic.woff") format("woff"), url("../fonts/AvenirNextCyr-Italic.ttf") format("truetype"), url("../fonts/AvenirNextCyr-Italic.svg#avenirNextCyr") format("svg");
+  font-weight: 400; /* Regular weight */
+  font-style: italic;
+}
+@font-face {
+  font-family: "avenirNextCyr";
+  src: url("../fonts/AvenirNextCyr-BoldItalic.eot");
+  src: url("../fonts/AvenirNextCyr-BoldItalic.eot?#iefix") format("embedded-opentype"), url("../fonts/AvenirNextCyr-BoldItalic.woff2") format("woff2"), url("../fonts/AvenirNextCyr-BoldItalic.woff") format("woff"), url("../fonts/AvenirNextCyr-BoldItalic.ttf") format("truetype"), url("../fonts/AvenirNextCyr-BoldItalic.svg#avenirNextCyr") format("svg");
+  font-weight: 700; /* Bold weight */
+  font-style: italic;
+}
+@font-face {
+  font-family: "avenirNextCyr";
+  src: url("../fonts/AvenirNextCyr-Medium.eot");
+  src: url("../fonts/AvenirNextCyr-Medium.eot?#iefix") format("embedded-opentype"), url("../fonts/AvenirNextCyr-Medium.woff2") format("woff2"), url("../fonts/AvenirNextCyr-Medium.woff") format("woff"), url("../fonts/AvenirNextCyr-Medium.ttf") format("truetype"), url("../fonts/AvenirNextCyr-Medium.svg#avenirNextCyr") format("svg");
+  font-weight: 500; /* Medium weight */
+}
+@font-face {
+  font-family: "avenirNextCyr";
+  src: url("../fonts/AvenirNextCyr-Light.eot");
+  src: url("../fonts/AvenirNextCyr-Light.eot?#iefix") format("embedded-opentype"), url("../fonts/AvenirNextCyr-Light.woff2") format("woff2"), url("../fonts/AvenirNextCyr-Light.woff") format("woff"), url("../fonts/AvenirNextCyr-Light.ttf") format("truetype"), url("../fonts/AvenirNextCyr-Light.svg#avenirNextCyr") format("svg");
+  font-weight: 300; /* Light weight */
+}
+@font-face {
+  font-family: "avenirNextCyr";
+  src: url("../fonts/AvenirNextCyr-ultralight.eot");
+  src: url("../fonts/AvenirNextCyr-ultralight.eot?#iefix") format("embedded-opentype"), url("../fonts/AvenirNextCyr-ultralight.woff2") format("woff2"), url("../fonts/AvenirNextCyr-ultralight.woff") format("woff"), url("../fonts/AvenirNextCyr-ultralight.ttf") format("truetype"), url("../fonts/AvenirNextCyr-ultralight.svg#avenirNextCyr") format("svg");
+  font-weight: 200; /* Ultralight weight */
+}
+body {
+  background: #022328 url("/static/image/bg_finish.svg") no-repeat center 100px;
+  font-family: avenirNextCyr, sans-serif;
+  color: #F9F8F3;
+}
+body .finishFee-image {
+  display: block;
+  margin: 0 auto;
+  padding-top: 175px;
+}
+body .finishFee-title {
+  padding-top: 33px;
+  text-align: center;
+}
+body .finishFee-escape {
+  padding-top: 23px;
+  text-align: center;
+  text-shadow: 0px 0px 10px #F9F8F3;
+}
+body .fee__button {
+  margin-top: 135px;
+  background-color: #3235B6;
+  font-size: 20px;
+  border-radius: 15px;
+  width: 100%;
+  padding: 17px 0;
+  text-align: center;
+}
+body .fee__button:hover {
+  background-color: rgb(61.8666666667, 119.8666666667, 54.1333333333);
+}
+
+/*# sourceMappingURL=finishFee.css.map */

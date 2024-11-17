@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Fee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/sass/fee.css">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="fee">
+            <div class="fee__cost">
+                <div class="fee__cost-list">
+                    <label class="fee__cost-title">Введите фиксированную сумму<br>
+                        <input type="number" name="cost" placeholder="0₽">
+                    </label>
+                </div>
+            </div>
+            <ul class="fee__info">
+                <li class="fee__info-org">
+                    <label class="fee__info-org">Название организации<br>
+                        <input type="text" name="org" placeholder="Введите название организации">
+                    </label>
+                </li>
+                <li class="fee__info-aim">
+                    <label class="fee__info-aim">Цель сборов<br>
+                        <input type="text" name="aim" placeholder="Введите цель сборов">
+                    </label>
+                </li>
+            </ul>
+            <button class="fee__button" id="createButton">Создать</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const createButton = document.getElementById('createButton');
+        const inputs = document.querySelectorAll('.fee input');
+
+        function checkInputs() {
+            let allFilled = true;
+            inputs.forEach(input => {
+                if (input.value.trim() === '') {
+                    allFilled = false;
+                }
+            });
+            createButton.disabled = !allFilled;
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener('input', checkInputs);
+        });
+
+        checkInputs(); // Initial check
+    });
+</script>
+<script>
+    document.getElementById('createButton').addEventListener('click', function() {
+        const cost = document.querySelector('input[name="cost"]').value;
+        const org = document.querySelector('input[name="org"]').value;
+        const aim = document.querySelector('input[name="aim"]').value;
+
+        const data = { cost, org, aim };
+
+        fetch('/finishFee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/finishFee';
+            } else {
+                console.error('Failed to send data:', response.statusText);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+
+
+</body>
+</html>

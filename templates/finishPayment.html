@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Good!</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/sass/finishPayment.css">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="finish text-center">
+            <img class="finish-image" src="/static/image/good.svg" alt="good">
+            <h1 class="finish-title">Оплата прошла<br>успешно!</h1>
+<!--            <button id="return-button" class="btn btn-primary mt-3" href="https://t.me/profspay_bot">Вернуться к боту</button>-->
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+<script>
+    // Check if Telegram WebApp API is available
+    if (window.Telegram && Telegram.WebApp) {
+        // Setup closing behavior
+        Telegram.WebApp.setupClosingBehavior(() => {
+            console.log("Custom closing behavior triggered");
+            // Add custom logic here, e.g., showing a confirmation prompt
+        });
+
+        const returnButton = document.getElementById('return-button');
+        returnButton.addEventListener('click', () => {
+            Telegram.WebApp.close(); // Closes the mini-app and returns to the bot
+        });
+    } else {
+        console.error("Telegram WebApp API is not available.");
+    }
+</script>
+
+</body>
+</html>

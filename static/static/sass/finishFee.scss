@@ -1,0 +1,40 @@
+@import "baze";
+@import "variable";
+@import "font";
+
+body {
+  background: $bg url("/static/image/bg_finish.svg") no-repeat center 100px;
+  font-family: avenirNextCyr, sans-serif;
+  color: $text;
+
+  .finishFee-image {
+    display: block;
+    margin: 0 auto;
+    padding-top: 248px;
+  }
+
+  .finishFee-title {
+    padding-top: 33px;
+    text-align: center;
+  }
+
+  .finishFee-escape {
+    padding-top: 23px;
+    text-align: center;
+    text-shadow: 0px 0px 10px $text;
+  }
+
+  .fee__button {
+    margin-top: 135px;
+    background-color: $secondary;
+    font-size: 20px;
+    border-radius: 15px;
+    width: 100%;
+    padding: 17px 0;
+    text-align: center;
+
+    &:hover {
+      background-color: darken($primary, 10%);
+    }
+  }
+}

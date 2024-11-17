@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Good!</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/sass/finishFee.css">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="finishFee">
+            <img class="finishFee-image" src="/static/image/smile.svg" alt="good">
+            <h1 class="finishFee-title">Сбор взносов<br>создан!</h1>
+            <button class="fee__button" id="createButton">Сделать рассылку</button>
+<!--            <a href="https://t.me/profspay_bot" class="finishFee-escape">Вернуться к боту</a>-->
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+<script>
+    document.getElementById('createButton').addEventListener('click', function () {
+        const data = {};
+
+        fetch('/spamFee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/spamFee';
+                } else {
+                    console.error('Failed to send data:', response.statusText);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+@import "baze";
+@import "variable";
+@import "font";
+
+body {
+  background: $bg url("/static/image/bg_finish.svg") no-repeat center 100px;
+  font-family: avenirNextCyr, sans-serif;
+  color: $text;
+
+  .finish-image {
+    display: block;
+    margin: 0 auto;
+    padding-top: 248px;
+  }
+
+  .finish-title{
+    padding-top: 33px;
+    text-align: center;
+  }
+
+  .finish-escape{
+    padding-top: 121px;
+    text-align: center;
+    text-shadow: 0px 0px 10px $text;
+  }
+}

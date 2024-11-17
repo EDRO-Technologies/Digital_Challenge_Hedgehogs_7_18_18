@@ -1,0 +1,7 @@
+@font-face {
+  font-family: "avenirNextCyr";
+  src: url("../fonts/AvenirNextCyr-Regular.eot");
+  src: url("../fonts/AvenirNextCyr-Regular.eot?#iefix") format("embedded-opentype"), url("../fonts/AvenirNextCyr-Regular.woff2") format("woff2"), url("../fonts/AvenirNextCyr-Regular.woff") format("woff"), url("../fonts/AvenirNextCyr-Regular.ttf") format("truetype"), url("../fonts/AvenirNextCyr-Regular.svg#avenirNextCyr") format("svg");
+}
+
+/*# sourceMappingURL=font.css.map */

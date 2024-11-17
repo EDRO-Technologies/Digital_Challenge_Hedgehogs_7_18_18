@@ -1,0 +1,84 @@
+@import "baze";
+@import "variable";
+@import "font";
+
+body {
+  background: $bg url("/static/image/bg.svg") top no-repeat;
+  background-size: cover;
+  font-family: avenirNextCyr, sans-serif;
+  color: $text;
+
+  .fee {
+    padding-top: 85px;
+
+    .fee__cost {
+      background-color: $bg;
+      border-radius: 25px;
+
+      .fee__cost-list {
+        padding: 22px 0 22px 24px;
+        margin-bottom: 27px;
+
+
+        .fee__cost-title {
+          font-weight: 400;
+
+          input::placeholder {
+            color: $text;
+          }
+        }
+      }
+    }
+
+    .fee__info {
+
+      .fee__info-org {
+        font-weight: 500;
+        width: 100%;
+
+        input {
+          width: 100%;
+
+          &::placeholder {
+            color: $text;
+          }
+        }
+      }
+      .fee__info-aim {
+        font-weight: 500;
+        margin-top: 10px;
+
+        input {
+          width: 100%;
+
+          &::placeholder {
+            color: $text;
+          }
+        }
+      }
+
+
+      li {
+        background-color: $bg;
+        border-radius: 12px;
+        padding-top: 12px;
+        padding-left: 14px;
+        padding-bottom: 12px;
+      }
+    }
+
+    .fee__button {
+      margin-top: 171px;
+      background-color: $primary;
+      font-size: 20px;
+      border-radius: 15px;
+      width: 100%;
+      padding: 17px 0;
+      text-align: center;
+
+      &:hover {
+        background-color: darken($primary, 10%);
+      }
+    }
+  }
+}
