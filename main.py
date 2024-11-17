@@ -76,6 +76,7 @@ def create_payment_for_all(amount, description):
 
         cur.execute("DELETE FROM payment_users")
 
+        amount = float(amount)
         users_con = sqlite3.connect("database/chats.db")
         users_cur = users_con.cursor()
         users_cur.execute("SELECT id FROM users")
