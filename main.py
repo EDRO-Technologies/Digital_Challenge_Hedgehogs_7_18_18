@@ -11,13 +11,10 @@ import schedule
 import time
 import threading
 
-# Загрузка переменных из .env
 load_dotenv()
 
-# Получение данных
 ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
 
-# Проверка формата ключа
 if ENCRYPTION_KEY:
     try:
         cipher_suite = Fernet(ENCRYPTION_KEY.encode())
@@ -27,20 +24,16 @@ if ENCRYPTION_KEY:
 else:
     print("ENCRYPTION_KEY не найден в .env")
 
-# Получение конфиденциальных данных из переменных окружения
 TOKEN_BOT = os.getenv("TOKEN_BOT")
 ACCOUNT_ID = os.getenv("ACCOUNT_ID")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
 
-# Проверка наличия ключей
 if not all([TOKEN_BOT, ACCOUNT_ID, SECRET_KEY, ENCRYPTION_KEY]):
     raise ValueError("Отсутствуют необходимые переменные окружения.")
 
-# Конфигурация шифрования
 cipher_suite = Fernet(ENCRYPTION_KEY.encode())
 
-# Настройка YooKassa
 Configuration.account_id = ACCOUNT_ID
 Configuration.secret_key = SECRET_KEY
 
@@ -122,10 +115,10 @@ def create_payment_for_all(amount, description):
 def register_user(message):
     pic = open('database/start_pic.jpg', 'rb')
     bot.send_photo(message.chat.id, photo=pic,
-                   caption="Приветствуем в Студенческом профсоюзе СурГУ! 🚀 \n\n  Мы поможем тебе в учёбе и жизни: "
+                   caption="Приветствуем в Студенческом профсоюзе СурГУ! 🚀 \n\nМы поможем тебе в учёбе и жизни: "
                            "скидки, подкасты, конкурсы, защита твоих прав и материальная поддержка!\n\nВступив (3% "
                            "от стипендии), получишь льготы и доступ к приложению СКС РФ. Пройди наш опрос и обратись "
-                           "к профоргу своего института для вступления. Присоединяйся! ❤️\n\n "
+                           "к профоргу своего института для вступления. Присоединяйся! ❤️\n\n"
                            "Опрос: https://docs.google.com/forms/d/e/1FAIpQLSc-Qp5VzL529")
     try:
         bot.send_message(message.chat.id, "Введите своё ФИО:")
@@ -275,34 +268,24 @@ def who_paid(message):
 
 def send_payment_reminders():
     try:
-        con = sqlite3.connect("database/payments.db")
-        cur = con.cursor()
+        with sqlite3.connect("database/payments.db") as con:
+            cur = con.cursor()
 
-        cur.execute("""
-            SELECT id, description, amount, created_at FROM payments ORDER BY created_at DESC LIMIT 1
-        """)
-        payment = cur.fetchone()
-
-        if not payment:
-            print("Нет активных платежей для отправки напоминаний.")
-            return
-
-        payment_id, description, amount, created_at = payment
-
-        cur.execute("""
-            SELECT user_id, confirmation_url FROM payment_users WHERE status = 'pending'
-        """)
-        pending_users = cur.fetchall()
-        con.close()
+            cur.execute("""
+                SELECT user_id, confirmation_url FROM payment_users WHERE status = 'pending'
+            """)
+            pending_users = cur.fetchall()
 
         for user_id, confirmation_url in pending_users:
-            bot.send_message(
-                user_id,
-                f"Напоминание: Вы ещё не оплатили платёж.\n"
-                f"Сумма: {amount} RUB\n"
-                f"Описание: {description}\n"
-                f"Ссылка для оплаты: {confirmation_url}"
-            )
+            try:
+                bot.send_message(
+                    user_id,
+                    f"Напоминание об оплате:\n\n"
+                    f"Ссылка для оплаты: {confirmation_url}"
+                )
+            except Exception as msg_error:
+                print(f"Ошибка отправки сообщения пользователю {user_id}: {msg_error}")
+
         print(f"Отправлены напоминания {len(pending_users)} пользователям.")
     except Exception as e:
         print(f"Ошибка при отправке напоминаний: {e}")
@@ -320,4 +303,5 @@ print("Планировщик напоминаний запущен!")
 
 if __name__ == '__main__':
     bot.polling()
-    threading.Thread(target=run_schedule, daemon=True).start()
+    scheduler_thread = threading.Thread(target=run_schedule, daemon=True)
+    scheduler_thread.start()

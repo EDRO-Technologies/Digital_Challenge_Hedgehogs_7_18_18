@@ -1,14 +1,10 @@
 import functools
 import sqlite3
 import traceback
-import uuid
-from datetime import datetime
-
-from main import ACCOUNT_ID, bot, create_payment_for_all
+from main import create_payment_for_all
 from flask import Flask, render_template, request, session, jsonify, redirect
 from yookassa import Payment
-
-from main import is_admin, bot
+from main import is_admin
 
 app = Flask(__name__, template_folder='./templates')
 
@@ -25,7 +21,8 @@ def error_handler(f):
     return decorated_function
 
 
-app.secret_key = 'your_secret_key'  # Настройте секретный ключ для сессий
+app.secret_key = 'your_secret_key'
+
 
 @app.route('/save_user_id', methods=['POST'])
 def save_user_id():
@@ -66,12 +63,28 @@ def payment():
             if payment_id:
                 payment = Payment.find_one(payment_id)
                 if payment.status == "succeeded":
+                    con = sqlite3.connect("database/payments.db")
+                    cur = con.cursor()
+                    cur.execute("""
+                        UPDATE payment_users
+                        SET status = 'paid'
+                        WHERE user_id = ?
+                    """, (user_id,))
+                    con.commit()
+                    con.close()
                     return render_template('finishPayment.html')
-            else:
-                return render_template('finishPayment.html')
-
-            return render_template(
-                'payment.html',
+                elif payment.status == "cancelled":
+                    con = sqlite3.connect("database/payments.db")
+                    cur = con.cursor()
+                    cur.execute("""
+                        UPDATE payment_users
+                        SET status = 'break'
+                        WHERE user_id = ?
+                    """, (user_id,))
+                    con.commit()
+                    con.close()
+                    return render_template('notFinishPayment.html')
+            return render_template('payment.html',
                 cost_price=amount,
                 info_text_org_title="Название организации",
                 info_text_org="Профсоюз",
@@ -112,7 +125,6 @@ def finish_fee():
 @app.route('/spamFee', methods=['POST', 'GET'])
 def spam_fee():
     if request.method == 'POST':
-        data = request.json
         return jsonify({'message': 'Data received successfully'})
     if request.method == 'GET':
         c = session["cost"]
